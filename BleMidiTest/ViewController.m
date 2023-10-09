@@ -14,6 +14,7 @@
 	PGMidi *_midi;
 	
 	UILabel *_labelCount;
+	UIScrollView *_scrollViewReceive;
 	UILabel *_labelReceive;
 }
 @end
@@ -45,14 +46,19 @@
 	////////////////
 	
 	CGFloat fWidth = [[UIScreen mainScreen] bounds].size.width;
-//	CGFloat fHeight = [[UIScreen mainScreen] bounds].size.height;
+	CGFloat fHeight = [[UIScreen mainScreen] bounds].size.height;
 	
-	NSArray *arSubTitle = @[@"Connect", @"Receive", @"Send"];
+	NSArray *arSubTitle = @[@"Connect", @"Send", @"Receive"];
+	float fSubTitleY[] = {80.0, 80.0 + 130.0, 80.0 + 130.0 * 2 + 70.0};
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+		fSubTitleY[2] = 80.0 + 130.0 * 2;
+	}
 	UILabel *labelSubTitle[3];
 	for (int i = 0; i < 3; i++) {
 		labelSubTitle[i] = [[UILabel alloc] init];
-		labelSubTitle[i].frame = CGRectMake(20.0, 80.0 + 150.0 * i, fWidth - 20.0, 40.0);
+		labelSubTitle[i].frame = CGRectMake(20.0, fSubTitleY[i], fWidth - 20.0, 40.0);
 		labelSubTitle[i].text = arSubTitle[i];
+		labelSubTitle[i].font = [UIFont systemFontOfSize:18.0];
 		[self.view addSubview:labelSubTitle[i]];
 	}
 
@@ -61,7 +67,7 @@
 	for (int i = 0; i < 2; i++) {
 		buttonConnect[i] = [UIButton buttonWithType:UIButtonTypeCustom];
 		buttonConnect[i].tag = 1000 + i;
-		[buttonConnect[i] setFrame:CGRectMake(20.0 + 140.0 * i, 80.0 + 40.0, 120.0, 60.0)];
+		[buttonConnect[i] setFrame:CGRectMake(20.0 + 140.0 * i, 80.0 + 50.0, 120.0, 60.0)];
 		[buttonConnect[i] setTitle:arTitleConnect[i] forState:UIControlStateNormal];
 		buttonConnect[i].backgroundColor = [UIColor lightGrayColor];
 		[buttonConnect[i] addTarget:self action:@selector(buttonConnectAct:) forControlEvents:UIControlEventTouchUpInside];
@@ -72,32 +78,15 @@
 		buttonConnect[i].clipsToBounds = YES;
 	}
 
-	_labelCount = [[UILabel alloc] init];
-	[_labelCount setFrame:CGRectMake(10.0, 80.0 + 150.0 + 40.0, fWidth - 20.0, 25.0)];
-	_labelCount.font = [UIFont systemFontOfSize:11.0];
-	[_labelCount setBackgroundColor:[UIColor whiteColor]];
-	_labelCount.numberOfLines = 0;
-	[self.view addSubview:_labelCount];
-
-	_labelReceive = [[UILabel alloc] init];
-	[_labelReceive setFrame:CGRectMake(10.0, 80.0 + 150.0 + 40.0 + 30.0, fWidth - 20.0, 60.0)];
-	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-	} else {
-		_labelReceive.font = [UIFont systemFontOfSize:11.0];
-	}
-	[_labelReceive setBackgroundColor:[UIColor whiteColor]];
-	_labelReceive.numberOfLines = 0;
-	[self.view addSubview:_labelReceive];
-
 	NSArray *arTitleSend = @[@"C", @"D", @"E", @"F", @"G", @"A", @"B", @"C"];
 	UIButton *buttonSend[8];
 	for (int i = 0; i < 8; i++) {
 		buttonSend[i] = [UIButton buttonWithType:UIButtonTypeCustom];
 		buttonSend[i].tag = 2000 + i;
 		if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-			[buttonSend[i] setFrame:CGRectMake(20.0 + 80.0 * i, 80.0 + 150.0 * 2 + 40.0, 70.0, 60.0)];
+			[buttonSend[i] setFrame:CGRectMake(20.0 + 80.0 * i, 80.0 + 130.0 + 50.0, 70.0, 60.0)];
 		} else {
-			[buttonSend[i] setFrame:CGRectMake(20.0 + 80.0 * (i % 4), 80.0 + 150.0 * 2 + 40.0 + 70.0 * (i / 4), 70.0, 60.0)];
+			[buttonSend[i] setFrame:CGRectMake(20.0 + 80.0 * (i % 4), 80.0 + 130.0 + 50.0 + 70.0 * (i / 4), 70.0, 60.0)];
 		}
 		[buttonSend[i] setTitle:arTitleSend[i] forState:UIControlStateNormal];
 		buttonSend[i].backgroundColor = [UIColor lightGrayColor];
@@ -110,6 +99,52 @@
 		buttonSend[i].layer.cornerRadius = 6.0;
 		buttonSend[i].clipsToBounds = YES;
 	}
+	
+	UIButton *buttonClearReceive = [UIButton buttonWithType:UIButtonTypeCustom];
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+		[buttonClearReceive setFrame:CGRectMake(20.0 + 80.0 * 7, 80.0 + 130.0 * 2, 70.0, 40.0)];
+	} else {
+		[buttonClearReceive setFrame:CGRectMake(20.0 + 80.0 * 3, 80.0 + 130.0 * 2 + 70.0, 70.0, 40.0)];
+	}
+	[buttonClearReceive setTitle:@"Clear" forState:UIControlStateNormal];
+	buttonClearReceive.backgroundColor = [UIColor lightGrayColor];
+	[buttonClearReceive addTarget:self action:@selector(buttonClearReceiveAct:) forControlEvents:UIControlEventTouchUpInside];
+	[self.view addSubview:buttonClearReceive];
+	buttonClearReceive.layer.borderColor = [[UIColor blackColor] CGColor];
+	buttonClearReceive.layer.borderWidth = 1.0;
+	buttonClearReceive.layer.cornerRadius = 6.0;
+	buttonClearReceive.clipsToBounds = YES;
+
+	_labelCount = [[UILabel alloc] init];
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+		[_labelCount setFrame:CGRectMake(10.0, 80.0 + 130.0 * 2 + 50.0, fWidth - 20.0, 30.0)];
+	} else {
+		[_labelCount setFrame:CGRectMake(10.0, 80.0 + 130.0 * 2 + 70.0 + 50.0, fWidth - 20.0, 30.0)];
+		_labelCount.font = [UIFont systemFontOfSize:11.0];
+	}
+	[_labelCount setBackgroundColor:[UIColor whiteColor]];
+	_labelCount.numberOfLines = 0;
+	[self.view addSubview:_labelCount];
+
+	_scrollViewReceive = [[UIScrollView alloc] init];
+	float fScrollViewReceiveY = 80.0 + 130.0 * 2 + 70.0 + 50.0 + 35.0;
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+		fScrollViewReceiveY = 80.0 + 130.0 * 2 + 50.0 + 35.0;
+	}
+	[_scrollViewReceive setFrame:CGRectMake(10.0, fScrollViewReceiveY, fWidth - 20.0, fHeight - (fScrollViewReceiveY + 35.0))];
+	_scrollViewReceive.backgroundColor = [UIColor whiteColor];
+	_scrollViewReceive.contentSize = CGSizeMake(_scrollViewReceive.frame.size.width, _scrollViewReceive.frame.size.height);
+	[self.view addSubview:_scrollViewReceive];
+
+	_labelReceive = [[UILabel alloc] init];
+	[_labelReceive setFrame:CGRectMake(0.0, 0.0, _scrollViewReceive.frame.size.width, _scrollViewReceive.frame.size.height)];
+	[_labelReceive setBackgroundColor:[UIColor whiteColor]];
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+		_labelReceive.font = [UIFont systemFontOfSize:18.0];
+	}
+	_labelReceive.numberOfLines = 0;
+	[_labelReceive sizeToFit];
+	[_scrollViewReceive addSubview:_labelReceive];
 
 }
 
@@ -129,6 +164,13 @@
 		CABTMIDILocalPeripheralViewController *pPeripheralVC = [[CABTMIDILocalPeripheralViewController alloc] init];
 		[self.navigationController pushViewController:pPeripheralVC animated:YES];
 	}
+}
+
+- (void)buttonClearReceiveAct:(UIButton *)sender
+{
+	_labelReceive.text = @"";
+	
+	[self updateReceiveLabel:@""];
 }
 
 ////////////////////////////////////////////////////////////////
@@ -201,8 +243,30 @@
 
 - (void)updateReceiveLabel:(NSString *)string
 {
-	_labelReceive.text = string;
+	NSString *strBak = _labelReceive.text;
+	
+	if (strBak.length == 0) {
+		_labelReceive.text = string;
+	} else {
+		_labelReceive.text = [NSString stringWithFormat:@"%@\n%@", strBak, string];
+	}
 	NSLog(@"%@", string);
+	
+	float fScrollViewWidth = _scrollViewReceive.frame.size.width;
+	float fLabelWidth = _labelReceive.frame.size.width;
+
+	_labelReceive.frame = CGRectMake(0.0, 0.0, 1366.0, _labelReceive.frame.size.height + 10.0);
+	[_labelReceive sizeToFit];
+	
+	// adjust width
+	if (fLabelWidth < _labelReceive.frame.size.width + 10.0) {
+		fLabelWidth = _labelReceive.frame.size.width + 10.0;
+	}
+	if (fLabelWidth < fScrollViewWidth) {
+		fLabelWidth = fScrollViewWidth;
+	}
+	
+	_scrollViewReceive.contentSize = CGSizeMake(fLabelWidth, _labelReceive.frame.size.height + 10.0);
 }
 
 - (void)updateCountLabel
@@ -225,33 +289,16 @@ NSString *ToString(PGMidiConnection *connection)
 ////////////////////////////////////////////////////////////////
 #pragma mark - PGMidiSourceDelegate
 
-/*
-NSString *StringFromPacket(const MIDIPacket *packet)
-{
-	// Note - this is not an example of MIDI parsing. I'm just dumping
-	// some bytes for diagnostics.
-	// See comments in PGMidiSourceDelegate for an example of how to
-	// interpret the MIDIPacket structure.
-	
-	return [NSString stringWithFormat:@"  %u bytes: [%02x,%02x,%02x]",
-			packet->length,
-			(packet->length > 0) ? packet->data[0] : 0,
-			(packet->length > 1) ? packet->data[1] : 0,
-			(packet->length > 2) ? packet->data[2] : 0];
-}
-*/
-
 - (void)callMIDIPacket:(NSInteger)iIndex packet:(const MIDIPacket *)packet
 {
-	Byte bNoteOn = 0x9;
-	Byte bNoteOff = 0x8;
+//	NSData *dataRet = [NSData dataWithBytes:packet->data length:packet->length];
+//	NSLog(@"dataRet %@", dataRet);
 	
-	if (packet->data[0] >> 4 == bNoteOn) {
-		[self updateReceiveLabel:[NSString stringWithFormat:@"NoteOn: %d %d %d", packet->data[0], packet->data[1], packet->data[2]]];
-		
-	} else if (packet->data[0] >> 4 == bNoteOff) {
-		[self updateReceiveLabel:[NSString stringWithFormat:@"NoteOff: %d %d %d", packet->data[0], packet->data[1], packet->data[2]]];
+	NSMutableString *strPacket = [NSMutableString string];
+	for (int i=0; i < packet->length; i++) {
+		[strPacket appendFormat:@"%X ", packet->data[i]];
 	}
+	[self updateReceiveLabel:strPacket];
 }
 
 - (void)midiSource:(PGMidiSource *)midi midiReceived:(const MIDIPacketList *)packetList
